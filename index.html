@@ -7,16 +7,48 @@
 </head>
 <body>
 
-  <div class="calendar">
-    <div class="header">
-      <button id="prev">◀</button>
-      <h2 id="monthYear"></h2>
-      <button id="next">▶</button>
-    </div>
+<div class="app">
 
-    <div class="days" id="days"></div>
+  <!-- HEADER -->
+  <header class="top-header">
+    <h1 id="monthTitle">Enero</h1>
+    <span id="yearTitle">2025</span>
+  </header>
+
+  <div class="content">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <section class="events-panel">
+        <h2>Eventos del día</h2>
+        <div id="eventsList">Selecciona un día</div>
+        <button id="addEventBtn">➕ Agregar evento</button>
+      </section>
+
+      <section class="notes-panel">
+        <h2>Notas</h2>
+        <textarea placeholder="Escribe aquí..."></textarea>
+      </section>
+    </aside>
+
+    <!-- CALENDARIO -->
+    <main class="calendar-area">
+      <div class="calendar-header">
+        <button id="prev">◀</button>
+        <button id="next">▶</button>
+      </div>
+
+      <div class="weekdays">
+        <div>LUN</div><div>MAR</div><div>MIÉ</div>
+        <div>JUE</div><div>VIE</div><div>SÁB</div><div>DOM</div>
+      </div>
+
+      <div class="days" id="days"></div>
+    </main>
+
   </div>
+</div>
 
-  <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
