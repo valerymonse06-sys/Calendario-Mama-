@@ -110,6 +110,17 @@ function showEvents() {
       renderCalendar();
     };
 
-    const del = document.createElement("span");
-    del.textContent = "❌";
-    del.onclick = ()
+const del = document.createElement("span");
+del.textContent = "❌";
+del.onclick = () => {
+  if (!confirm("¿Eliminar este evento?")) return;
+
+  events[selectedDate].splice(index, 1);
+  if (events[selectedDate].length === 0) {
+    delete events[selectedDate];
+  }
+  saveEvents();
+  showEvents();
+  renderCalendar();
+};
+
