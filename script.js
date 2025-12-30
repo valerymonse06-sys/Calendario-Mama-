@@ -3,19 +3,18 @@ const monthTitle = document.getElementById("monthTitle");
 const yearTitle = document.getElementById("yearTitle");
 const eventsList = document.getElementById("eventsList");
 const addEventBtn = document.getElementById("addEventBtn");
+const prevBtn = document.getElementById("prev");
+const nextBtn = document.getElementById("next");
 
 let currentDate = new Date();
 let selectedDate = null;
+
 let events = JSON.parse(localStorage.getItem("events")) || {};
 
 const decorations = ["⭐", "❤️", "⭕"];
 
 function saveEvents() {
   localStorage.setItem("events", JSON.stringify(events));
-}
-
-function randomDecoration(seed) {
-  return decorations[seed % decorations.length];
 }
 
 function renderCalendar() {
@@ -36,38 +35,38 @@ function renderCalendar() {
   const lastDate = new Date(year, month + 1, 0).getDate();
 
   for (let i = 1; i < firstDay; i++) {
-    daysContainer.innerHTML += `<div></div>`;
+    daysContainer.appendChild(document.createElement("div"));
   }
 
   for (let d = 1; d <= lastDate; d++) {
     const dateKey = `${year}-${month + 1}-${d}`;
-    const div = document.createElement("div");
-    div.className = "day";
+
+    const day = document.createElement("div");
+    day.className = "day";
+
+    if (dateKey === selectedDate) {
+      day.classList.add("selected");
+    }
 
     const number = document.createElement("div");
     number.className = "day-number";
     number.textContent = d;
+    day.appendChild(number);
 
-    div.appendChild(number);
-
-    if (events[dateKey]) {
+    if (events[dateKey] && events[dateKey].length > 0) {
       const deco = document.createElement("div");
       deco.className = "decoration";
-      deco.textContent = randomDecoration(d);
-      div.appendChild(deco);
+      deco.textContent = decorations[d % decorations.length];
+      day.appendChild(deco);
     }
 
-    if (dateKey === selectedDate) {
-      div.classList.add("selected");
-    }
-
-    div.onclick = () => {
+    day.onclick = () => {
       selectedDate = dateKey;
       showEvents();
       renderCalendar();
     };
 
-    daysContainer.appendChild(div);
+    daysContainer.appendChild(day);
   }
 }
 
@@ -88,11 +87,11 @@ function showEvents() {
 
 addEventBtn.onclick = () => {
   if (!selectedDate) {
-    alert("Primero selecciona un día");
+    alert("Primero selecciona un día del calendario");
     return;
   }
 
-  const hora = prompt("Hora (ej: 15:30)");
+  const hora = prompt("Hora (ej: 08:30)");
   if (!hora) return;
 
   const texto = prompt("¿Qué evento es?");
@@ -104,6 +103,20 @@ addEventBtn.onclick = () => {
 
   events[selectedDate].push({ hora, texto });
   saveEvents();
+  showEvents();
+  renderCalendar();
+};
+
+prevBtn.onclick = () => {
+  currentDate.setMonth(currentDate.getMonth() - 1);
+  selectedDate = null;
+  showEvents();
+  renderCalendar();
+};
+
+nextBtn.onclick = () => {
+  currentDate.setMonth(currentDate.getMonth() + 1);
+  selectedDate = null;
   showEvents();
   renderCalendar();
 };
