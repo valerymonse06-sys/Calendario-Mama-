@@ -148,3 +148,42 @@ textarea {
   cursor: pointer;
   margin-left: 6px;
 }
+.calendar-area {
+  position: relative;
+  perspective: 1200px;
+}
+
+.days {
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.days.slide-left {
+  transform: translateX(-30px) rotateY(5deg);
+  opacity: 0;
+}
+
+.days.slide-right {
+  transform: translateX(30px) rotateY(-5deg);
+  opacity: 0;
+}
+
+/* hojas detrás */
+.calendar-area::before,
+.calendar-area::after {
+  content: "";
+  position: absolute;
+  top: 60px;
+  left: 15px;
+  width: 100%;
+  height: calc(100% - 60px);
+  background: white;
+  border-radius: 12px;
+  z-index: -1;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.calendar-area::after {
+  left: 30px;
+  top: 75px;
+  opacity: 0.6;
+}
