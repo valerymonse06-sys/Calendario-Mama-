@@ -84,50 +84,55 @@ function showEvents() {
     return;
   }
 
-  events[selectedDate].forEach((ev, index) => {
-    const item = document.createElement("div");
-    item.className = "event-item";
+events[selectedDate].forEach((ev, index) => {
+  const item = document.createElement("div");
+  item.className = "event-item";
 
-    const text = document.createElement("div");
-    text.className = "event-text";
-    text.textContent = `🕒 ${ev.hora} – ${ev.texto}`;
+  const text = document.createElement("div");
+  text.className = "event-text";
+  text.textContent = `🕒 ${ev.hora} – ${ev.texto}`;
 
-    const actions = document.createElement("div");
-    actions.className = "event-actions";
+  const actions = document.createElement("div");
+  actions.className = "event-actions";
 
-    const edit = document.createElement("span");
-    edit.textContent = "✏️";
-    edit.onclick = () => {
-      const nuevaHora = prompt("Editar hora:", ev.hora);
-      if (!nuevaHora) return;
+  // ✏️ EDITAR
+  const edit = document.createElement("span");
+  edit.textContent = "✏️";
+  edit.onclick = () => {
+    const nuevaHora = prompt("Editar hora:", ev.hora);
+    if (!nuevaHora) return;
 
-      const nuevoTexto = prompt("Editar evento:", ev.texto);
-      if (!nuevoTexto) return;
+    const nuevoTexto = prompt("Editar evento:", ev.texto);
+    if (!nuevoTexto) return;
 
-      events[selectedDate][index] = { hora: nuevaHora, texto: nuevoTexto };
-      saveEvents();
-      showEvents();
-      renderCalendar();
+    events[selectedDate][index] = {
+      hora: nuevaHora,
+      texto: nuevoTexto
     };
+    saveEvents();
+    showEvents();
+    renderCalendar();
+  };
 
-const del = document.createElement("span");
-del.textContent = "❌";
-del.onclick = () => {
-  if (!confirm("¿Eliminar este evento?")) return;
+  // ❌ BORRAR
+  const del = document.createElement("span");
+  del.textContent = "❌";
+  del.onclick = () => {
+    if (!confirm("¿Eliminar este evento?")) return;
 
-  events[selectedDate].splice(index, 1);
-  if (events[selectedDate].length === 0) {
-    delete events[selectedDate];
-  }
-  saveEvents();
-  showEvents();
-  renderCalendar();
-};
+    events[selectedDate].splice(index, 1);
+    if (events[selectedDate].length === 0) {
+      delete events[selectedDate];
+    }
+    saveEvents();
+    showEvents();
+    renderCalendar();
+  };
 
-actions.appendChild(edit);
-actions.appendChild(del);
+  actions.appendChild(edit);
+  actions.appendChild(del);
 
-item.appendChild(text);
-item.appendChild(actions);
-
-eventsList.appendChild(item);
+  item.appendChild(text);
+  item.appendChild(actions);
+  eventsList.appendChild(item);
+});
