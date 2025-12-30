@@ -10,12 +10,13 @@ let currentDate = new Date();
 let selectedDate = null;
 let events = JSON.parse(localStorage.getItem("events")) || {};
 
-const decorations = ["🦋","🌸","🍄","✨","🎀","🧸","🪐"];
+const decorations = ["🦋","🌸","🍄","✨","🎀","🧸","🪐","🌼"];
 
 function saveEvents() {
   localStorage.setItem("events", JSON.stringify(events));
 }
 
+/* CALENDARIO */
 function renderCalendar() {
   daysContainer.innerHTML = "";
 
@@ -67,6 +68,7 @@ function renderCalendar() {
   }
 }
 
+/* EVENTOS */
 function showEvents() {
   eventsList.innerHTML = "";
 
@@ -84,10 +86,8 @@ function showEvents() {
 
     const actions = document.createElement("span");
 
-    // ✏️ EDITAR
     const edit = document.createElement("span");
     edit.textContent = " ✏️";
-    edit.style.cursor = "pointer";
     edit.onclick = () => {
       const nuevaHora = prompt("Editar hora:", ev.hora);
       if (!nuevaHora) return;
@@ -101,13 +101,10 @@ function showEvents() {
       renderCalendar();
     };
 
-    // ❌ BORRAR
     const del = document.createElement("span");
     del.textContent = " ❌";
-    del.style.cursor = "pointer";
     del.onclick = () => {
       if (!confirm("¿Eliminar este evento?")) return;
-
       events[selectedDate].splice(index, 1);
       if (events[selectedDate].length === 0) delete events[selectedDate];
       saveEvents();
@@ -123,27 +120,32 @@ function showEvents() {
     eventsList.appendChild(item);
   });
 }
+
+/* AGREGAR EVENTO */
+addEventBtn.onclick = () => {
+  if (!selectedDate) {
+    alert("Selecciona un día primero");
+    return;
+  }
+
+  const hora = prompt("Hora del evento:");
+  if (!hora) return;
+
+  const texto = prompt("¿Qué evento es?");
+  if (!texto) return;
+
+  if (!events[selectedDate]) events[selectedDate] = [];
+  events[selectedDate].push({ hora, texto });
+
+  saveEvents();
+  showEvents();
+  renderCalendar();
+};
+
+/* CAMBIO DE MES */
 prevBtn.onclick = () => {
-  daysContainer.classList.add("slide-right");
-
-  setTimeout(() => {
-    currentDate.setMonth(currentDate.getMonth() - 1);
-    selectedDate = null;
-    renderCalendar();
-    showEvents();
-    daysContainer.classList.remove("slide-right");
-  }, 300);
+  currentDate.setMonth(currentDate.getMonth() - 1);
+  renderCalendar();
 };
 
-nextBtn.onclick = () => {
-  daysContainer.classList.add("slide-left");
-
-  setTimeout(() => {
-    currentDate.setMonth(currentDate.getMonth() + 1);
-    selectedDate = null;
-    renderCalendar();
-    showEvents();
-    daysContainer.classList.remove("slide-left");
-  }, 300);
-};
-renderCalendar();
+nextBtn.o
