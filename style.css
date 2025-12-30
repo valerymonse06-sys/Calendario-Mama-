@@ -187,3 +187,16 @@ textarea {
   top: 75px;
   opacity: 0.6;
 }
+#days {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.slide-left {
+  transform: translateX(-20px);
+  opacity: 0;
+}
+
+.slide-right {
+  transform: translateX(20px);
+  opacity: 0;
+}
