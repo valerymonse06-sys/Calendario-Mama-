@@ -182,4 +182,18 @@ body {
   background: #f5f3ef;
   box-shadow: inset 0 0 0 2px #fff;
 }
+.days {
+  animation: pageFlip 0.35s ease;
+}
+
+@keyframes pageFlip {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 
