@@ -48,3 +48,8 @@ body {
 .day:hover {
   background: #ffcdd2;
 }
+.has-event {
+  background: #ff8a80;
+  color: white;
+  font-weight: bold;
+}
