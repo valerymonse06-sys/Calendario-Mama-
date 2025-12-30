@@ -1,9 +1,10 @@
 const daysContainer = document.getElementById("days");
-const monthYear = document.getElementById("monthYear");
-const prevBtn = document.getElementById("prev");
-const nextBtn = document.getElementById("next");
+const monthTitle = document.getElementById("monthTitle");
+const yearTitle = document.getElementById("yearTitle");
+const eventsList = document.getElementById("eventsList");
 
 let currentDate = new Date();
+let selectedDate = null;
 let events = JSON.parse(localStorage.getItem("events")) || {};
 
 function saveEvents() {
@@ -16,53 +17,54 @@ function renderCalendar() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  const monthNames = [
+  const months = [
     "Enero","Febrero","Marzo","Abril","Mayo","Junio",
     "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
   ];
 
-  monthYear.textContent = `${monthNames[month]} ${year}`;
+  monthTitle.textContent = months[month];
+  yearTitle.textContent = year;
 
-  const firstDay = new Date(year, month, 1).getDay();
+  const firstDay = new Date(year, month, 1).getDay() || 7;
   const lastDate = new Date(year, month + 1, 0).getDate();
 
-  for (let i = 0; i < firstDay; i++) {
+  for (let i = 1; i < firstDay; i++) {
     daysContainer.innerHTML += `<div></div>`;
   }
 
-  for (let day = 1; day <= lastDate; day++) {
-    const dateKey = `${year}-${month + 1}-${day}`;
+  for (let d = 1; d <= lastDate; d++) {
+    const dateKey = `${year}-${month + 1}-${d}`;
+    const div = document.createElement("div");
+    div.className = "day";
+    div.textContent = d;
 
-    const dayDiv = document.createElement("div");
-    dayDiv.className = "day";
-    dayDiv.textContent = day;
-
-    if (events[dateKey]) {
-      dayDiv.classList.add("has-event");
+    if (dateKey === selectedDate) {
+      div.classList.add("selected");
     }
 
-    dayDiv.addEventListener("click", () => {
-      const text = prompt("¿Qué evento quieres agregar?");
-      if (text) {
-        if (!events[dateKey]) events[dateKey] = [];
-        events[dateKey].push(text);
-        saveEvents();
-        renderCalendar();
-      }
-    });
+    div.onclick = () => {
+      selectedDate = dateKey;
+      showEvents();
+      renderCalendar();
+    };
 
-    daysContainer.appendChild(dayDiv);
+    daysContainer.appendChild(div);
   }
 }
 
-prevBtn.addEventListener("click", () => {
-  currentDate.setMonth(currentDate.getMonth() - 1);
-  renderCalendar();
-});
+function showEvents() {
+  eventsList.innerHTML = "";
 
-nextBtn.addEventListener("click", () => {
-  currentDate.setMonth(currentDate.getMonth() + 1);
-  renderCalendar();
-});
+  if (!selectedDate || !events[selectedDate]) {
+    eventsList.textContent = "No hay eventos este día";
+    return;
+  }
+
+  events[selectedDate].forEach(ev => {
+    const p = document.createElement("p");
+    p.textContent = ev;
+    eventsList.appendChild(p);
+  });
+}
 
 renderCalendar();
