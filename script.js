@@ -11,12 +11,17 @@ let selectedDate = null;
 
 let events = JSON.parse(localStorage.getItem("events")) || {};
 
-const decorations = ["⭐", "❤️", "⭕"];
+const decorations = [
+  "🦋","🌸","🌼","🍁","🍄",
+  "🪐","✨","🎀","🧸","🕯️",
+  "🐢","🐞","💐","🪻","🫧"
+];
 
 function saveEvents() {
   localStorage.setItem("events", JSON.stringify(events));
 }
 
+/* ---------- CALENDARIO ---------- */
 function renderCalendar() {
   daysContainer.innerHTML = "";
 
@@ -62,7 +67,16 @@ function renderCalendar() {
 
     day.onclick = () => {
       selectedDate = dateKey;
-      function showEvents() {
+      showEvents();
+      renderCalendar();
+    };
+
+    daysContainer.appendChild(day);
+  }
+}
+
+/* ---------- EVENTOS ---------- */
+function showEvents() {
   eventsList.innerHTML = "";
 
   if (!selectedDate || !events[selectedDate]) {
@@ -90,10 +104,7 @@ function renderCalendar() {
       const nuevoTexto = prompt("Editar evento:", ev.texto);
       if (!nuevoTexto) return;
 
-      events[selectedDate][index] = {
-        hora: nuevaHora,
-        texto: nuevoTexto
-      };
+      events[selectedDate][index] = { hora: nuevaHora, texto: nuevoTexto };
       saveEvents();
       showEvents();
       renderCalendar();
@@ -101,84 +112,4 @@ function renderCalendar() {
 
     const del = document.createElement("span");
     del.textContent = "❌";
-    del.onclick = () => {
-      if (!confirm("¿Eliminar este evento?")) return;
-
-      events[selectedDate].splice(index, 1);
-      if (events[selectedDate].length === 0) {
-        delete events[selectedDate];
-      }
-      saveEvents();
-      showEvents();
-      renderCalendar();
-    };
-
-    actions.appendChild(edit);
-    actions.appendChild(del);
-
-    item.appendChild(text);
-    item.appendChild(actions);
-
-    eventsList.appendChild(item);
-  });
-}
-
-      renderCalendar();
-    };
-
-    daysContainer.appendChild(day);
-  }
-}
-
-function showEvents() {
-  eventsList.innerHTML = "";
-
-  if (!selectedDate || !events[selectedDate]) {
-    eventsList.textContent = "No hay eventos este día";
-    return;
-  }
-
-  events[selectedDate].forEach(ev => {
-    const p = document.createElement("p");
-    p.textContent = `🕒 ${ev.hora} – ${ev.texto}`;
-    eventsList.appendChild(p);
-  });
-}
-
-addEventBtn.onclick = () => {
-  if (!selectedDate) {
-    alert("Primero selecciona un día del calendario");
-    return;
-  }
-
-  const hora = prompt("Hora (ej: 08:30)");
-  if (!hora) return;
-
-  const texto = prompt("¿Qué evento es?");
-  if (!texto) return;
-
-  if (!events[selectedDate]) {
-    events[selectedDate] = [];
-  }
-
-  events[selectedDate].push({ hora, texto });
-  saveEvents();
-  showEvents();
-  renderCalendar();
-};
-
-prevBtn.onclick = () => {
-  currentDate.setMonth(currentDate.getMonth() - 1);
-  selectedDate = null;
-  showEvents();
-  renderCalendar();
-};
-
-nextBtn.onclick = () => {
-  currentDate.setMonth(currentDate.getMonth() + 1);
-  selectedDate = null;
-  showEvents();
-  renderCalendar();
-};
-
-renderCalendar();
+    del.onclick = ()
