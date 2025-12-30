@@ -9,13 +9,15 @@
 
 <div class="app">
 
+  <!-- HEADER -->
   <header class="top-header">
-    <h1 id="monthTitle">Enero</h1>
-    <span id="yearTitle">2025</span>
+    <h1 id="monthTitle"></h1>
+    <span id="yearTitle"></span>
   </header>
 
   <div class="content">
 
+    <!-- SIDEBAR -->
     <aside class="sidebar">
       <section class="events-panel">
         <h2>Eventos del día</h2>
@@ -29,16 +31,20 @@
       </section>
     </aside>
 
+    <!-- CALENDARIO -->
     <main class="calendar-area notebook">
-  <div class="rings"></div>
+      <div class="calendar-header">
+        <button id="prev">◀</button>
+        <button id="next">▶</button>
+      </div>
 
-  <div class="calendar-header">
-    ...
-  </div>
+      <div class="weekdays">
+        <div>LUN</div><div>MAR</div><div>MIÉ</div>
+        <div>JUE</div><div>VIE</div><div>SÁB</div><div>DOM</div>
+      </div>
 
-  <div class="weekdays">...</div>
-  <div class="days" id="days"></div>
-</main>
+      <div class="days" id="days"></div>
+    </main>
 
   </div>
 </div>
