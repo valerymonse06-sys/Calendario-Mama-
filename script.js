@@ -124,3 +124,10 @@ del.onclick = () => {
   renderCalendar();
 };
 
+actions.appendChild(edit);
+actions.appendChild(del);
+
+item.appendChild(text);
+item.appendChild(actions);
+
+eventsList.appendChild(item);
