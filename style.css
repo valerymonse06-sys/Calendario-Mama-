@@ -143,3 +143,43 @@ body {
 .event-item span {
   font-family: "Comic Sans MS", "Segoe Script", cursive;
 }
+/* 📒 CUADERNO */
+.notebook {
+  position: relative;
+  background: #fff;
+  padding-left: 40px;
+  border-radius: 16px;
+  box-shadow:
+    0 15px 30px rgba(0,0,0,0.15),
+    -6px 6px 0 #ece7df,
+    -12px 12px 0 #e5dfd6;
+}
+
+/* 📎 ANILLOS */
+.rings {
+  position: absolute;
+  top: 20px;
+  left: 8px;
+  width: 18px;
+  height: calc(100% - 40px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.rings::before,
+.rings::after {
+  content: "";
+}
+
+.rings div,
+.rings::before,
+.rings::after {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #b89b6a;
+  border-radius: 50%;
+  background: #f5f3ef;
+  box-shadow: inset 0 0 0 2px #fff;
+}
+
