@@ -8,16 +8,14 @@ const nextBtn = document.getElementById("next");
 
 let currentDate = new Date();
 let selectedDate = null;
-
 let events = JSON.parse(localStorage.getItem("events")) || {};
 
-const decorations = ["🦋","🌸","🌼","🍁","🍄","✨","🎀","🧸"];
+const decorations = ["🦋","🌸","🍄","✨","🎀","🧸","🪐"];
 
 function saveEvents() {
   localStorage.setItem("events", JSON.stringify(events));
 }
 
-/* ---------- CALENDARIO ---------- */
 function renderCalendar() {
   daysContainer.innerHTML = "";
 
@@ -45,14 +43,12 @@ function renderCalendar() {
     const day = document.createElement("div");
     day.className = "day";
 
-    if (dateKey === selectedDate) {
-      day.classList.add("selected");
-    }
+    if (dateKey === selectedDate) day.classList.add("selected");
 
-    const number = document.createElement("div");
-    number.className = "day-number";
-    number.textContent = d;
-    day.appendChild(number);
+    const num = document.createElement("div");
+    num.className = "day-number";
+    num.textContent = d;
+    day.appendChild(num);
 
     if (events[dateKey]) {
       const deco = document.createElement("div");
@@ -71,7 +67,6 @@ function renderCalendar() {
   }
 }
 
-/* ---------- EVENTOS ---------- */
 function showEvents() {
   eventsList.innerHTML = "";
 
@@ -80,53 +75,30 @@ function showEvents() {
     return;
   }
 
-  events[selectedDate].forEach((ev, index) => {
+  events[selectedDate].forEach((ev, i) => {
     const item = document.createElement("div");
     item.className = "event-item";
 
-    const text = document.createElement("div");
-    text.className = "event-text";
-    text.textContent = `🕒 ${ev.hora} – ${ev.texto}`;
+    item.innerHTML = `🕒 ${ev.hora} – ${ev.texto}
+      <span>
+        ✏️ <span data-i="${i}">❌</span>
+      </span>`;
 
-    const actions = document.createElement("div");
-    actions.className = "event-actions";
-
-    const edit = document.createElement("span");
-    edit.textContent = "✏️";
-    edit.onclick = () => {
-      const h = prompt("Hora:", ev.hora);
-      const t = prompt("Evento:", ev.texto);
-      if (!h || !t) return;
-
-      events[selectedDate][index] = { hora: h, texto: t };
-      saveEvents();
-      showEvents();
-      renderCalendar();
-    };
-
-    const del = document.createElement("span");
-    del.textContent = "❌";
-    del.onclick = () => {
-      events[selectedDate].splice(index, 1);
+    item.querySelector("span[data-i]").onclick = () => {
+      events[selectedDate].splice(i, 1);
       if (events[selectedDate].length === 0) delete events[selectedDate];
       saveEvents();
       showEvents();
       renderCalendar();
     };
 
-    actions.appendChild(edit);
-    actions.appendChild(del);
-
-    item.appendChild(text);
-    item.appendChild(actions);
     eventsList.appendChild(item);
   });
 }
 
-/* ---------- BOTÓN AGREGAR ---------- */
 addEventBtn.onclick = () => {
   if (!selectedDate) {
-    alert("Selecciona un día");
+    alert("Selecciona un día primero");
     return;
   }
 
@@ -145,15 +117,15 @@ addEventBtn.onclick = () => {
 prevBtn.onclick = () => {
   currentDate.setMonth(currentDate.getMonth() - 1);
   selectedDate = null;
-  showEvents();
   renderCalendar();
+  showEvents();
 };
 
 nextBtn.onclick = () => {
   currentDate.setMonth(currentDate.getMonth() + 1);
   selectedDate = null;
-  showEvents();
   renderCalendar();
+  showEvents();
 };
 
 renderCalendar();
