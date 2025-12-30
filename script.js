@@ -77,57 +77,51 @@ function showEvents() {
     return;
   }
 
-  events[selectedDate].forEach((ev, i) => {
+  events[selectedDate].forEach((ev, index) => {
     const item = document.createElement("div");
     item.className = "event-item";
 
-    item.innerHTML = `🕒 ${ev.hora} – ${ev.texto}
-      <span>
-        ✏️ <span data-i="${i}">❌</span>
-      </span>`;
+    const text = document.createElement("span");
+    text.textContent = `🕒 ${ev.hora} – ${ev.texto}`;
 
-    item.querySelector("span[data-i]").onclick = () => {
-      events[selectedDate].splice(i, 1);
+    const actions = document.createElement("span");
+
+    // ✏️ EDITAR
+    const edit = document.createElement("span");
+    edit.textContent = " ✏️";
+    edit.style.cursor = "pointer";
+    edit.onclick = () => {
+      const nuevaHora = prompt("Editar hora:", ev.hora);
+      if (!nuevaHora) return;
+
+      const nuevoTexto = prompt("Editar evento:", ev.texto);
+      if (!nuevoTexto) return;
+
+      events[selectedDate][index] = { hora: nuevaHora, texto: nuevoTexto };
+      saveEvents();
+      showEvents();
+      renderCalendar();
+    };
+
+    // ❌ BORRAR
+    const del = document.createElement("span");
+    del.textContent = " ❌";
+    del.style.cursor = "pointer";
+    del.onclick = () => {
+      if (!confirm("¿Eliminar este evento?")) return;
+
+      events[selectedDate].splice(index, 1);
       if (events[selectedDate].length === 0) delete events[selectedDate];
       saveEvents();
       showEvents();
       renderCalendar();
     };
 
+    actions.appendChild(edit);
+    actions.appendChild(del);
+
+    item.appendChild(text);
+    item.appendChild(actions);
     eventsList.appendChild(item);
   });
 }
-
-addEventBtn.onclick = () => {
-  if (!selectedDate) {
-    alert("Selecciona un día primero");
-    return;
-  }
-
-  const hora = prompt("Hora:");
-  const texto = prompt("Evento:");
-  if (!hora || !texto) return;
-
-  if (!events[selectedDate]) events[selectedDate] = [];
-  events[selectedDate].push({ hora, texto });
-
-  saveEvents();
-  showEvents();
-  renderCalendar();
-};
-
-prevBtn.onclick = () => {
-  currentDate.setMonth(currentDate.getMonth() - 1);
-  selectedDate = null;
-  renderCalendar();
-  showEvents();
-};
-
-nextBtn.onclick = () => {
-  currentDate.setMonth(currentDate.getMonth() + 1);
-  selectedDate = null;
-  renderCalendar();
-  showEvents();
-};
-
-renderCalendar();
