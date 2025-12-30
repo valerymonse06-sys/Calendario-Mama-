@@ -2,50 +2,62 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Calendario personal interactivo">
   <title>Calendario de Mamá</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
 <div class="app">
-
   <!-- HEADER -->
   <header class="top-header">
-    <h1 id="monthTitle"></h1>
-    <span id="yearTitle"></span>
+    <h1 id="monthTitle">Enero</h1>
+    <span id="yearTitle" aria-label="Año actual">2030</span>
   </header>
-
+  
   <div class="content">
-
     <!-- SIDEBAR -->
     <aside class="sidebar">
       <section class="events-panel">
         <h2>Eventos del día</h2>
-        <div id="eventsList">Selecciona un día</div>
-        <button id="addEventBtn">➕ Agregar evento</button>
+        <div id="eventsList" role="region" aria-live="polite">
+          Selecciona un día
+        </div>
+        <button id="addEventBtn" aria-label="Agregar nuevo evento">
+          ➕ Agregar evento
+        </button>
       </section>
-
+      
       <section class="notes-panel">
         <h2>Notas</h2>
-        <textarea placeholder="Escribe aquí..."></textarea>
+        <textarea 
+          id="notesArea"
+          placeholder="Escribe aquí tus notas..." 
+          aria-label="Área de notas personales"
+          rows="6">
+        </textarea>
       </section>
     </aside>
-
+    
     <!-- CALENDARIO -->
     <main class="calendar-area notebook">
       <div class="calendar-header">
-        <button id="prev">◀</button>
-        <button id="next">▶</button>
+        <button id="prev" aria-label="Mes anterior">◀</button>
+        <button id="next" aria-label="Mes siguiente">▶</button>
       </div>
-
-      <div class="weekdays">
-        <div>LUN</div><div>MAR</div><div>MIÉ</div>
-        <div>JUE</div><div>VIE</div><div>SÁB</div><div>DOM</div>
+      
+      <div class="weekdays" role="row">
+        <div role="columnheader">LUN</div>
+        <div role="columnheader">MAR</div>
+        <div role="columnheader">MIÉ</div>
+        <div role="columnheader">JUE</div>
+        <div role="columnheader">VIE</div>
+        <div role="columnheader">SÁB</div>
+        <div role="columnheader">DOM</div>
       </div>
-
-      <div class="days" id="days"></div>
+      
+      <div class="days" id="days" role="grid" aria-label="Días del mes"></div>
     </main>
-
   </div>
 </div>
 
