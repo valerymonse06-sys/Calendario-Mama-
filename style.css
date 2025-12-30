@@ -124,3 +124,23 @@ body {
 .day.selected {
   outline: 3px solid #D4A574;
 }
+.day {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  min-height: 95px;
+  padding: 6px;
+}
+
+.day-number {
+  font-size: 0.9rem;
+}
+
+.decoration {
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  font-size: 1.3rem;
+  transform: rotate(-10deg);
+  opacity: 0.8;
+}
