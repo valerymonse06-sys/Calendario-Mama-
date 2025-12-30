@@ -4,6 +4,11 @@ const prevBtn = document.getElementById("prev");
 const nextBtn = document.getElementById("next");
 
 let currentDate = new Date();
+let events = JSON.parse(localStorage.getItem("events")) || {};
+
+function saveEvents() {
+  localStorage.setItem("events", JSON.stringify(events));
+}
 
 function renderCalendar() {
   daysContainer.innerHTML = "";
@@ -26,7 +31,27 @@ function renderCalendar() {
   }
 
   for (let day = 1; day <= lastDate; day++) {
-    daysContainer.innerHTML += `<div class="day">${day}</div>`;
+    const dateKey = `${year}-${month + 1}-${day}`;
+
+    const dayDiv = document.createElement("div");
+    dayDiv.className = "day";
+    dayDiv.textContent = day;
+
+    if (events[dateKey]) {
+      dayDiv.classList.add("has-event");
+    }
+
+    dayDiv.addEventListener("click", () => {
+      const text = prompt("¿Qué evento quieres agregar?");
+      if (text) {
+        if (!events[dateKey]) events[dateKey] = [];
+        events[dateKey].push(text);
+        saveEvents();
+        renderCalendar();
+      }
+    });
+
+    daysContainer.appendChild(dayDiv);
   }
 }
 
