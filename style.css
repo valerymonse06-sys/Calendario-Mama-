@@ -1,55 +1,108 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Arial, sans-serif;
-  background: #f5f5f5;
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(120deg, #f3e7e9, #e3eeff);
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
 }
 
+/* CONTENEDOR PRINCIPAL */
 .calendar {
-  background: white;
-  width: 320px;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  background: #ffffff;
+  width: 90%;
+  max-width: 900px;
+  padding: 30px;
+  border-radius: 18px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
 
+/* ENCABEZADO */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 25px;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: #333;
 }
 
 .header button {
-  background: #d32f2f;
+  background: #c62828;
   color: white;
   border: none;
-  padding: 5px 10px;
-  border-radius: 5px;
+  padding: 10px 18px;
+  font-size: 1.2rem;
+  border-radius: 8px;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
+.header button:hover {
+  background: #b71c1c;
+}
+
+/* DÍAS */
 .days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  margin-top: 10px;
-  gap: 5px;
+  gap: 12px;
 }
 
 .day {
-  background: #eee;
-  text-align: center;
-  padding: 10px 0;
-  border-radius: 5px;
+  background: #f5f5f5;
+  min-height: 90px;
+  padding: 10px;
+  border-radius: 12px;
   cursor: pointer;
+  position: relative;
+  font-size: 1.1rem;
+  transition: transform 0.15s, background 0.15s;
 }
 
 .day:hover {
-  background: #ffcdd2;
+  background: #ffe0e0;
+  transform: translateY(-3px);
 }
+
+/* DÍAS CON EVENTO */
 .has-event {
-  background: #ff8a80;
-  color: white;
+  background: #ffb3b3;
+  color: #7a0000;
   font-weight: bold;
+}
+
+.has-event::after {
+  content: "•";
+  position: absolute;
+  bottom: 8px;
+  right: 10px;
+  font-size: 2rem;
+  color: #b71c1c;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .calendar {
+    padding: 20px;
+  }
+
+  .header h2 {
+    font-size: 1.6rem;
+  }
+
+  .day {
+    min-height: 65px;
+    font-size: 0.95rem;
+  }
 }
