@@ -1,5 +1,3 @@
-alert("JS conectado correctamente");
-
 const daysContainer = document.getElementById("days");
 const monthTitle = document.getElementById("monthTitle");
 const yearTitle = document.getElementById("yearTitle");
@@ -125,3 +123,27 @@ function showEvents() {
     eventsList.appendChild(item);
   });
 }
+prevBtn.onclick = () => {
+  daysContainer.classList.add("slide-right");
+
+  setTimeout(() => {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    selectedDate = null;
+    renderCalendar();
+    showEvents();
+    daysContainer.classList.remove("slide-right");
+  }, 300);
+};
+
+nextBtn.onclick = () => {
+  daysContainer.classList.add("slide-left");
+
+  setTimeout(() => {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    selectedDate = null;
+    renderCalendar();
+    showEvents();
+    daysContainer.classList.remove("slide-left");
+  }, 300);
+};
+renderCalendar();
