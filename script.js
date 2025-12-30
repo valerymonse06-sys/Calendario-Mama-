@@ -1,3 +1,5 @@
+alert("JS conectado correctamente");
+
 const daysContainer = document.getElementById("days");
 const monthTitle = document.getElementById("monthTitle");
 const yearTitle = document.getElementById("yearTitle");
