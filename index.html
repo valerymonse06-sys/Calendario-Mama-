@@ -3,113 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Calendario personal interactivo">
-  <title>Calendario de Mamá</title>
+  <title>El Calendario de Mamá ✨</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="app">
-  <!-- HEADER -->
   <header class="top-header">
-    <h1 id="monthTitle">Enero</h1>
-    <div class="header-controls">
-      <button id="viewToggle" class="view-toggle-btn" title="Cambiar vista">
-        📅 Vista Mensual
-      </button>
+    <div class="header-left">
+      <h1 id="monthTitle">Enero</h1>
+      <span id="yearTitle">2025</span>
     </div>
-    <span id="yearTitle" aria-label="Año actual">2030</span>
+    <div class="header-controls">
+      <button id="searchOpenBtn" class="icon-btn" title="Buscar eventos">🔍</button>
+      <button id="resetPinBtn" class="icon-btn" title="Cambiar PIN">🔑</button>
+    </div>
   </header>
   
   <div class="content">
-    <!-- SIDEBAR -->
     <aside class="sidebar">
-      <!-- Búsqueda -->
-      <section class="search-panel">
-        <h2>🔍 Buscar eventos</h2>
-        <input 
-          type="text" 
-          id="searchInput" 
-          placeholder="Buscar por texto o etiqueta..."
-          aria-label="Buscar eventos"
-        >
-        <div id="searchResults" class="search-results"></div>
-      </section>
-
-      <!-- Eventos del día -->
       <section class="events-panel">
         <h2>Eventos del día</h2>
-        <div id="eventsList" role="region" aria-live="polite">
-          Selecciona un día
-        </div>
-        <button id="addEventBtn" aria-label="Agregar nuevo evento">
-          ➕ Agregar evento
-        </button>
+        <div id="eventsList">Selecciona un día</div>
+        <button id="addEventBtn">➕ Agregar evento</button>
       </section>
       
-      <!-- Notas -->
       <section class="notes-panel">
-        <h2>Notas</h2>
-        <textarea 
-          id="notesArea"
-          placeholder="Escribe aquí tus notas..." 
-          aria-label="Área de notas personales"
-          rows="6">
-        </textarea>
+        <h2>Notas rápidas</h2>
+        <textarea id="notesArea" placeholder="Escribe tus pendientes aquí..." rows="10"></textarea>
       </section>
     </aside>
     
-    <!-- CALENDARIO -->
     <main class="calendar-area notebook">
       <div class="calendar-header">
-        <button id="prev" aria-label="Anterior">◀</button>
-        <button id="next" aria-label="Siguiente">▶</button>
+        <button id="prev">◀</button>
+        <button id="next">▶</button>
       </div>
       
-      <div class="weekdays" role="row">
-        <div role="columnheader">LUN</div>
-        <div role="columnheader">MAR</div>
-        <div role="columnheader">MIÉ</div>
-        <div role="columnheader">JUE</div>
-        <div role="columnheader">VIE</div>
-        <div role="columnheader">SÁB</div>
-        <div role="columnheader">DOM</div>
+      <div class="weekdays">
+        <div>LUN</div><div>MAR</div><div>MIÉ</div><div>JUE</div><div>VIE</div><div>SÁB</div><div>DOM</div>
       </div>
       
-      <!-- Vista Mensual -->
-      <div class="days" id="days" role="grid" aria-label="Días del mes"></div>
-      
-      <!-- Vista Semanal -->
-      <div class="week-view" id="weekView" style="display: none;">
-        <div class="week-timeline">
-          <div class="time-column">
-            <div class="time-slot" data-hour="0">00:00</div>
-            <div class="time-slot" data-hour="1">01:00</div>
-            <div class="time-slot" data-hour="2">02:00</div>
-            <div class="time-slot" data-hour="3">03:00</div>
-            <div class="time-slot" data-hour="4">04:00</div>
-            <div class="time-slot" data-hour="5">05:00</div>
-            <div class="time-slot" data-hour="6">06:00</div>
-            <div class="time-slot" data-hour="7">07:00</div>
-            <div class="time-slot" data-hour="8">08:00</div>
-            <div class="time-slot" data-hour="9">09:00</div>
-            <div class="time-slot" data-hour="10">10:00</div>
-            <div class="time-slot" data-hour="11">11:00</div>
-            <div class="time-slot" data-hour="12">12:00</div>
-            <div class="time-slot" data-hour="13">13:00</div>
-            <div class="time-slot" data-hour="14">14:00</div>
-            <div class="time-slot" data-hour="15">15:00</div>
-            <div class="time-slot" data-hour="16">16:00</div>
-            <div class="time-slot" data-hour="17">17:00</div>
-            <div class="time-slot" data-hour="18">18:00</div>
-            <div class="time-slot" data-hour="19">19:00</div>
-            <div class="time-slot" data-hour="20">20:00</div>
-            <div class="time-slot" data-hour="21">21:00</div>
-            <div class="time-slot" data-hour="22">22:00</div>
-            <div class="time-slot" data-hour="23">23:00</div>
-          </div>
-          <div class="week-days-grid" id="weekDaysGrid"></div>
-        </div>
-      </div>
+      <div class="days" id="days"></div>
     </main>
   </div>
 </div>
