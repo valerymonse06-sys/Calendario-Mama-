@@ -162,7 +162,8 @@ body::after {
    SIDEBAR
 ============================================ */
 .sidebar {
-  width: 32%;
+  width: 28%;
+  min-width: 280px;
   display: flex;
   flex-direction: column;
   gap: 25px;
@@ -417,9 +418,10 @@ body::after {
    CALENDARIO
 ============================================ */
 .calendar-area {
-  width: 68%;
+  width: 72%;
+  flex: 1;
   background: var(--color-white);
-  padding: 25px;
+  padding: 20px;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   position: relative;
@@ -475,6 +477,8 @@ body::after {
   box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
+  z-index: 10;
+  min-width: 50px;
 }
 
 .calendar-header button::before {
@@ -488,6 +492,8 @@ body::after {
   border-radius: 50%;
   transform: translate(-50%, -50%);
   transition: width 0.5s, height 0.5s;
+  pointer-events: none;
+  z-index: -1;
 }
 
 .calendar-header button:hover::before {
@@ -528,14 +534,14 @@ body::after {
 .days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 12px;
+  gap: 8px;
 }
 
 .day {
   background: linear-gradient(135deg, var(--color-cream) 0%, #FFF8F0 100%);
   border-radius: var(--radius-md);
-  min-height: 100px;
-  padding: 10px;
+  min-height: 85px;
+  padding: 8px;
   cursor: pointer;
   position: relative;
   border: 2px solid var(--color-gray-light);
@@ -613,7 +619,7 @@ body::after {
 }
 
 .day-number {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--color-navy);
   margin-bottom: auto;
@@ -622,9 +628,9 @@ body::after {
 
 .decoration {
   position: absolute;
-  bottom: 8px;
-  right: 10px;
-  font-size: 1.8rem;
+  bottom: 6px;
+  right: 8px;
+  font-size: 1.4rem;
   transform: rotate(-12deg);
   opacity: 0.8;
   transition: var(--transition);
