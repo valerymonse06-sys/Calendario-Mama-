@@ -1,10 +1,15 @@
 const daysContainer = document.getElementById("days");
+const weekView = document.getElementById("weekView");
+const weekDaysGrid = document.getElementById("weekDaysGrid");
 const monthTitle = document.getElementById("monthTitle");
 const yearTitle = document.getElementById("yearTitle");
 const eventsList = document.getElementById("eventsList");
 const addEventBtn = document.getElementById("addEventBtn");
 const prevBtn = document.getElementById("prev");
 const nextBtn = document.getElementById("next");
+const viewToggleBtn = document.getElementById("viewToggle");
+const searchInput = document.getElementById("searchInput");
+const searchResults = document.getElementById("searchResults");
 const notebook = document.querySelector(".notebook");
 const notesArea = document.getElementById("notesArea");
 
@@ -13,6 +18,8 @@ let selectedDate = null;
 let events = {};
 let notes = "";
 let notificationCheckInterval = null;
+let currentView = "month"; // "month" o "week"
+let currentWeekStart = null;
 
 // Constantes
 const MONTHS = [
@@ -22,11 +29,44 @@ const MONTHS = [
 
 const DECORATIONS = ["🦋", "🌸", "🍄", "✨", "🎀", "🧸", "🪐", "🌼", "🍁"];
 
+// Etiquetas predefinidas con colores
+const TAGS = {
+  "#trabajo": "#4285f4",
+  "#personal": "#ea4335",
+  "#importante": "#fbbc04",
+  "#urgente": "#ff6b6b",
+  "#salud": "#34a853",
+  "#familia": "#ff69b4",
+  "#estudio": "#9b59b6",
+  "#deporte": "#00bcd4"
+};
+
 // ============================================
 // SISTEMA DE NOTIFICACIONES
 // ============================================
 
-// Solicitar permiso para notificaciones
+function playNotificationSound() {
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+  oscillator.type = 'sine';
+  
+  const now = audioContext.currentTime;
+  oscillator.frequency.setValueAtTime(800, now);
+  gainNode.gain.setValueAtTime(0.3, now);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+  
+  oscillator.frequency.setValueAtTime(1000, now + 0.15);
+  gainNode.gain.setValueAtTime(0.2, now + 0.15);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+  
+  oscillator.start(now);
+  oscillator.stop(now + 0.5);
+}
+
 function requestNotificationPermission() {
   if ("Notification" in window) {
     if (Notification.permission === "default") {
@@ -36,49 +76,12 @@ function requestNotificationPermission() {
         }
       });
     }
-  } else {
-    console.log("Este navegador no soporta notificaciones");
   }
 }
 
-// Reproducir sonido de notificación
-function playNotificationSound() {
-  // Crear contexto de audio
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  
-  // Crear oscilador para el sonido
-  const oscillator = audioContext.createOscillator();
-  const gainNode = audioContext.createGain();
-  
-  oscillator.connect(gainNode);
-  gainNode.connect(audioContext.destination);
-  
-  // Configurar sonido agradable (campana suave)
-  oscillator.type = 'sine';
-  
-  // Secuencia de notas para un sonido tipo campana
-  const now = audioContext.currentTime;
-  
-  // Primera nota
-  oscillator.frequency.setValueAtTime(800, now);
-  gainNode.gain.setValueAtTime(0.3, now);
-  gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-  
-  // Segunda nota (más aguda)
-  oscillator.frequency.setValueAtTime(1000, now + 0.15);
-  gainNode.gain.setValueAtTime(0.2, now + 0.15);
-  gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-  
-  oscillator.start(now);
-  oscillator.stop(now + 0.5);
-}
-
-// Mostrar notificación
 function showNotification(title, body, icon = "🔔") {
   if ("Notification" in window && Notification.permission === "granted") {
-    // Reproducir sonido personalizado
     playNotificationSound();
-    
     new Notification(title, {
       body: body,
       icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>" + icon + "</text></svg>",
@@ -89,7 +92,6 @@ function showNotification(title, body, icon = "🔔") {
   }
 }
 
-// Verificar eventos próximos
 function checkUpcomingEvents() {
   const now = new Date();
   
@@ -101,11 +103,8 @@ function checkUpcomingEvents() {
         
         const eventDate = new Date(year, month - 1, day, hours, minutes);
         const timeDiff = eventDate - now;
-        
-        // Convertir minutos de recordatorio a milisegundos
         const reminderTime = event.reminder * 60 * 1000;
         
-        // Si falta exactamente el tiempo del recordatorio (con margen de 1 minuto)
         if (timeDiff > 0 && timeDiff <= reminderTime && timeDiff > (reminderTime - 60000)) {
           showNotification(
             `📅 Recordatorio: ${event.texto}`,
@@ -116,7 +115,6 @@ function checkUpcomingEvents() {
           saveEvents();
         }
         
-        // Resetear notificación si el evento ya pasó
         if (timeDiff < 0) {
           event.notified = false;
           saveEvents();
@@ -126,14 +124,11 @@ function checkUpcomingEvents() {
   });
 }
 
-// Iniciar verificación de notificaciones
 function startNotificationCheck() {
   if (notificationCheckInterval) {
     clearInterval(notificationCheckInterval);
   }
-  // Verificar cada 30 segundos
   notificationCheckInterval = setInterval(checkUpcomingEvents, 30000);
-  // Verificar inmediatamente
   checkUpcomingEvents();
 }
 
@@ -141,7 +136,6 @@ function startNotificationCheck() {
 // FUNCIONES DE DATOS
 // ============================================
 
-// Cargar datos guardados
 function loadData() {
   try {
     events = JSON.parse(localStorage.getItem("events")) || {};
@@ -154,7 +148,6 @@ function loadData() {
   }
 }
 
-// Guardar eventos
 function saveEvents() {
   try {
     localStorage.setItem("events", JSON.stringify(events));
@@ -164,7 +157,6 @@ function saveEvents() {
   }
 }
 
-// Guardar notas
 function saveNotes() {
   try {
     localStorage.setItem("notes", notesArea.value);
@@ -173,12 +165,10 @@ function saveNotes() {
   }
 }
 
-// Generar clave de fecha consistente
 function getDateKey(year, month, day) {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-// Animación de página
 function animatePage() {
   notebook.classList.remove("animate");
   void notebook.offsetWidth;
@@ -186,7 +176,196 @@ function animatePage() {
 }
 
 // ============================================
-// RENDERIZADO DEL CALENDARIO
+// FUNCIONES DE ETIQUETAS
+// ============================================
+
+function extractTags(text) {
+  const tagRegex = /#\w+/g;
+  return text.match(tagRegex) || [];
+}
+
+function renderTagsHTML(tags) {
+  return tags.map(tag => {
+    const color = TAGS[tag.toLowerCase()] || "#999";
+    return `<span class="event-tag" style="background-color: ${color}20; color: ${color}; border-color: ${color}">${tag}</span>`;
+  }).join(" ");
+}
+
+function removeTagsFromText(text) {
+  return text.replace(/#\w+/g, '').trim();
+}
+
+// ============================================
+// BÚSQUEDA DE EVENTOS
+// ============================================
+
+function searchEvents(query) {
+  if (!query.trim()) {
+    searchResults.innerHTML = "";
+    return;
+  }
+
+  const lowerQuery = query.toLowerCase();
+  const results = [];
+
+  Object.keys(events).forEach(dateKey => {
+    events[dateKey].forEach(event => {
+      const eventText = event.texto.toLowerCase();
+      if (eventText.includes(lowerQuery)) {
+        results.push({
+          date: dateKey,
+          event: event
+        });
+      }
+    });
+  });
+
+  if (results.length === 0) {
+    searchResults.innerHTML = '<div class="no-results">No se encontraron eventos</div>';
+    return;
+  }
+
+  searchResults.innerHTML = results.map(result => {
+    const [year, month, day] = result.date.split("-");
+    const dateStr = `${day}/${month}/${year}`;
+    const tags = extractTags(result.event.texto);
+    const cleanText = removeTagsFromText(result.event.texto);
+    
+    return `
+      <div class="search-result-item" data-date="${result.date}">
+        <div class="search-result-date">${dateStr}</div>
+        <div class="search-result-text">
+          🕒 ${result.event.hora} - ${cleanText}
+          ${tags.length > 0 ? renderTagsHTML(tags) : ''}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  // Agregar event listeners a los resultados
+  document.querySelectorAll('.search-result-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const dateKey = item.getAttribute('data-date');
+      const [year, month, day] = dateKey.split("-").map(Number);
+      
+      currentDate = new Date(year, month - 1, day);
+      selectedDate = dateKey;
+      
+      if (currentView === "month") {
+        renderCalendar();
+      } else {
+        setWeekFromDate(currentDate);
+        renderWeekView();
+      }
+      
+      showEvents();
+      searchInput.value = "";
+      searchResults.innerHTML = "";
+    });
+  });
+}
+
+// ============================================
+// VISTA SEMANAL
+// ============================================
+
+function getWeekStart(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(d.setDate(diff));
+}
+
+function setWeekFromDate(date) {
+  currentWeekStart = getWeekStart(date);
+}
+
+function renderWeekView() {
+  weekDaysGrid.innerHTML = "";
+  
+  const weekDays = [];
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(currentWeekStart);
+    date.setDate(date.getDate() + i);
+    weekDays.push(date);
+  }
+
+  weekDays.forEach(date => {
+    const dateKey = getDateKey(date.getFullYear(), date.getMonth(), date.getDate());
+    const dayEvents = events[dateKey] || [];
+    
+    const dayColumn = document.createElement("div");
+    dayColumn.className = "week-day-column";
+    
+    const dayHeader = document.createElement("div");
+    dayHeader.className = "week-day-header";
+    
+    const today = new Date();
+    const isToday = date.toDateString() === today.toDateString();
+    if (isToday) dayHeader.classList.add("today");
+    
+    const dayNames = ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"];
+    dayHeader.innerHTML = `
+      <div class="week-day-name">${dayNames[date.getDay()]}</div>
+      <div class="week-day-number">${date.getDate()}</div>
+    `;
+    
+    dayColumn.appendChild(dayHeader);
+    
+    const eventsContainer = document.createElement("div");
+    eventsContainer.className = "week-events-container";
+    
+    dayEvents.forEach(event => {
+      const [hours, minutes] = event.hora.split(":").map(Number);
+      const topPosition = (hours * 60 + minutes) * (50 / 60);
+      
+      const tags = extractTags(event.texto);
+      const cleanText = removeTagsFromText(event.texto);
+      
+      const eventBlock = document.createElement("div");
+      eventBlock.className = "week-event-block";
+      eventBlock.style.top = `${topPosition}px`;
+      
+      let bgColor = "#4285f4";
+      if (tags.length > 0) {
+        bgColor = TAGS[tags[0].toLowerCase()] || bgColor;
+      }
+      eventBlock.style.backgroundColor = bgColor + "30";
+      eventBlock.style.borderLeftColor = bgColor;
+      
+      eventBlock.innerHTML = `
+        <div class="week-event-time">${event.hora}</div>
+        <div class="week-event-text">${cleanText}</div>
+        ${tags.length > 0 ? `<div class="week-event-tags">${tags.join(" ")}</div>` : ''}
+      `;
+      
+      eventBlock.addEventListener('click', () => {
+        selectedDate = dateKey;
+        showEvents();
+      });
+      
+      eventsContainer.appendChild(eventBlock);
+    });
+    
+    dayColumn.appendChild(eventsContainer);
+    weekDaysGrid.appendChild(dayColumn);
+  });
+
+  const startDay = weekDays[0].getDate();
+  const endDay = weekDays[6].getDate();
+  const startMonth = MONTHS[weekDays[0].getMonth()];
+  const endMonth = MONTHS[weekDays[6].getMonth()];
+  
+  if (startMonth === endMonth) {
+    monthTitle.textContent = `${startMonth} ${startDay}-${endDay}`;
+  } else {
+    monthTitle.textContent = `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
+  }
+  yearTitle.textContent = weekDays[0].getFullYear();
+}
+
+// ============================================
+// VISTA MENSUAL
 // ============================================
 
 function renderCalendar() {
@@ -202,14 +381,12 @@ function renderCalendar() {
   const adjustedFirstDay = firstDay === 0 ? 7 : firstDay;
   const lastDate = new Date(year, month + 1, 0).getDate();
 
-  // Días vacíos al inicio
   for (let i = 1; i < adjustedFirstDay; i++) {
     const emptyDay = document.createElement("div");
     emptyDay.className = "day empty";
     daysContainer.appendChild(emptyDay);
   }
 
-  // Días del mes
   const today = new Date();
   const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
 
@@ -248,13 +425,39 @@ function renderCalendar() {
 }
 
 // ============================================
+// ALTERNAR VISTAS
+// ============================================
+
+function toggleView() {
+  if (currentView === "month") {
+    currentView = "week";
+    daysContainer.style.display = "none";
+    weekView.style.display = "block";
+    viewToggleBtn.textContent = "📅 Vista Mensual";
+    
+    setWeekFromDate(currentDate);
+    renderWeekView();
+  } else {
+    currentView = "month";
+    daysContainer.style.display = "grid";
+    weekView.style.display = "none";
+    viewToggleBtn.textContent = "📊 Vista Semanal";
+    
+    renderCalendar();
+  }
+  animatePage();
+}
+
+// ============================================
 // GESTIÓN DE EVENTOS
 // ============================================
 
 function selectDay(dateKey) {
   selectedDate = dateKey;
   showEvents();
-  renderCalendar();
+  if (currentView === "month") {
+    renderCalendar();
+  }
 }
 
 function showEvents() {
@@ -278,6 +481,9 @@ function showEvents() {
     const item = document.createElement("div");
     item.className = "event-item";
 
+    const tags = extractTags(ev.texto);
+    const cleanText = removeTagsFromText(ev.texto);
+
     const text = document.createElement("span");
     text.className = "event-text";
     
@@ -286,7 +492,10 @@ function showEvents() {
       reminderText = ` 🔔${ev.reminder}min`;
     }
     
-    text.textContent = `🕒 ${ev.hora} – ${ev.texto}${reminderText}`;
+    text.innerHTML = `
+      🕒 ${ev.hora} – ${cleanText}${reminderText}<br>
+      ${tags.length > 0 ? renderTagsHTML(tags) : ''}
+    `;
 
     const actions = document.createElement("span");
     actions.className = "event-actions";
@@ -323,7 +532,10 @@ function editEvent(index) {
   
   if (hora === null) return;
   
-  const texto = prompt("Editar evento:", ev.texto);
+  const texto = prompt(
+    "Editar evento:\n\nPuedes usar etiquetas como:\n#trabajo #personal #importante #urgente #salud #familia #estudio #deporte",
+    ev.texto
+  );
   
   if (texto === null) return;
 
@@ -332,14 +544,12 @@ function editEvent(index) {
     return;
   }
 
-  // Preguntar por recordatorio
   const wantsReminder = confirm("¿Quieres recibir un recordatorio para este evento?");
   let reminder = null;
   
   if (wantsReminder) {
     const reminderInput = prompt(
-      "¿Cuántos minutos antes quieres el recordatorio?\n" +
-      "(Ejemplos: 5, 10, 15, 30, 60)",
+      "¿Cuántos minutos antes quieres el recordatorio?\n(Ejemplos: 5, 10, 15, 30, 60)",
       ev.reminder || "15"
     );
     
@@ -347,8 +557,6 @@ function editEvent(index) {
       const reminderMinutes = parseInt(reminderInput);
       if (!isNaN(reminderMinutes) && reminderMinutes > 0) {
         reminder = reminderMinutes;
-        
-        // Solicitar permiso si no lo tiene
         if (Notification.permission === "default") {
           requestNotificationPermission();
         }
@@ -365,7 +573,13 @@ function editEvent(index) {
   
   saveEvents();
   showEvents();
-  renderCalendar();
+  
+  if (currentView === "month") {
+    renderCalendar();
+  } else {
+    renderWeekView();
+  }
+  
   startNotificationCheck();
 }
 
@@ -380,7 +594,12 @@ function deleteEvent(index) {
 
   saveEvents();
   showEvents();
-  renderCalendar();
+  
+  if (currentView === "month") {
+    renderCalendar();
+  } else {
+    renderWeekView();
+  }
 }
 
 function addEvent() {
@@ -392,7 +611,9 @@ function addEvent() {
   const hora = prompt("Hora (ej: 08:30):");
   if (hora === null) return;
 
-  const texto = prompt("Evento:");
+  const texto = prompt(
+    "Evento:\n\nPuedes usar etiquetas como:\n#trabajo #personal #importante #urgente #salud #familia #estudio #deporte"
+  );
   if (texto === null) return;
 
   if (!hora.trim() || !texto.trim()) {
@@ -400,14 +621,12 @@ function addEvent() {
     return;
   }
 
-  // Preguntar por recordatorio
   const wantsReminder = confirm("¿Quieres recibir un recordatorio para este evento?");
   let reminder = null;
   
   if (wantsReminder) {
     const reminderInput = prompt(
-      "¿Cuántos minutos antes quieres el recordatorio?\n" +
-      "(Ejemplos: 5, 10, 15, 30, 60)",
+      "¿Cuántos minutos antes quieres el recordatorio?\n(Ejemplos: 5, 10, 15, 30, 60)",
       "15"
     );
     
@@ -416,7 +635,6 @@ function addEvent() {
       if (!isNaN(reminderMinutes) && reminderMinutes > 0) {
         reminder = reminderMinutes;
         
-        // Solicitar permiso si no lo tiene
         if (Notification.permission === "default") {
           requestNotificationPermission();
         } else if (Notification.permission === "denied") {
@@ -439,7 +657,13 @@ function addEvent() {
 
   saveEvents();
   showEvents();
-  renderCalendar();
+  
+  if (currentView === "month") {
+    renderCalendar();
+  } else {
+    renderWeekView();
+  }
+  
   startNotificationCheck();
 }
 
@@ -447,20 +671,40 @@ function addEvent() {
 // NAVEGACIÓN
 // ============================================
 
-function goToPrevMonth() {
-  currentDate.setMonth(currentDate.getMonth() - 1);
+function goToPrev() {
+  if (currentView === "month") {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+  } else {
+    currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+  }
+  
   selectedDate = null;
   animatePage();
   showEvents();
-  renderCalendar();
+  
+  if (currentView === "month") {
+    renderCalendar();
+  } else {
+    renderWeekView();
+  }
 }
 
-function goToNextMonth() {
-  currentDate.setMonth(currentDate.getMonth() + 1);
+function goToNext() {
+  if (currentView === "month") {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+  } else {
+    currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+  }
+  
   selectedDate = null;
   animatePage();
   showEvents();
-  renderCalendar();
+  
+  if (currentView === "month") {
+    renderCalendar();
+  } else {
+    renderWeekView();
+  }
 }
 
 // ============================================
@@ -468,10 +712,18 @@ function goToNextMonth() {
 // ============================================
 
 addEventBtn.addEventListener("click", addEvent);
-prevBtn.addEventListener("click", goToPrevMonth);
-nextBtn.addEventListener("click", goToNextMonth);
+prevBtn.addEventListener("click", goToPrev);
+nextBtn.addEventListener("click", goToNext);
+viewToggleBtn.addEventListener("click", toggleView);
 
-// Guardar notas con debounce
+let searchTimeout;
+searchInput.addEventListener("input", (e) => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    searchEvents(e.target.value);
+  }, 300);
+});
+
 let notesTimeout;
 if (notesArea) {
   notesArea.addEventListener("input", () => {
@@ -480,15 +732,17 @@ if (notesArea) {
   });
 }
 
-// Atajos de teclado
 document.addEventListener("keydown", (e) => {
   if (e.key === "ArrowLeft" && e.ctrlKey) {
-    goToPrevMonth();
+    goToPrev();
   } else if (e.key === "ArrowRight" && e.ctrlKey) {
-    goToNextMonth();
+    goToNext();
   } else if (e.key === "n" && e.ctrlKey) {
     e.preventDefault();
     addEvent();
+  } else if (e.key === "v" && e.ctrlKey) {
+    e.preventDefault();
+    toggleView();
   }
 });
 
@@ -499,7 +753,6 @@ document.addEventListener("keydown", (e) => {
 loadData();
 renderCalendar();
 
-// Solicitar permiso de notificaciones al cargar
 if ("Notification" in window && Notification.permission === "default") {
   setTimeout(() => {
     if (confirm("¿Quieres activar las notificaciones para recibir recordatorios de tus eventos?")) {
@@ -508,5 +761,4 @@ if ("Notification" in window && Notification.permission === "default") {
   }, 2000);
 }
 
-// Iniciar verificación de notificaciones
 startNotificationCheck();
