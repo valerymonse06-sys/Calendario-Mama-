@@ -12,6 +12,7 @@ let currentDate = new Date();
 let selectedDate = null;
 let events = {};
 let notes = "";
+let notificationCheckInterval = null;
 
 // Constantes
 const MONTHS = [
@@ -20,6 +21,90 @@ const MONTHS = [
 ];
 
 const DECORATIONS = ["🦋", "🌸", "🍄", "✨", "🎀", "🧸", "🪐", "🌼", "🍁"];
+
+// ============================================
+// SISTEMA DE NOTIFICACIONES
+// ============================================
+
+// Solicitar permiso para notificaciones
+function requestNotificationPermission() {
+  if ("Notification" in window) {
+    if (Notification.permission === "default") {
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          showNotification("¡Notificaciones activadas!", "Ahora recibirás recordatorios de tus eventos 🎉");
+        }
+      });
+    }
+  } else {
+    console.log("Este navegador no soporta notificaciones");
+  }
+}
+
+// Mostrar notificación
+function showNotification(title, body, icon = "🔔") {
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification(title, {
+      body: body,
+      icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>" + icon + "</text></svg>",
+      badge: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔔</text></svg>",
+      requireInteraction: false,
+      silent: false
+    });
+  }
+}
+
+// Verificar eventos próximos
+function checkUpcomingEvents() {
+  const now = new Date();
+  
+  Object.keys(events).forEach(dateKey => {
+    events[dateKey].forEach(event => {
+      if (!event.notified && event.reminder) {
+        const [year, month, day] = dateKey.split("-").map(Number);
+        const [hours, minutes] = event.hora.split(":").map(Number);
+        
+        const eventDate = new Date(year, month - 1, day, hours, minutes);
+        const timeDiff = eventDate - now;
+        
+        // Convertir minutos de recordatorio a milisegundos
+        const reminderTime = event.reminder * 60 * 1000;
+        
+        // Si falta exactamente el tiempo del recordatorio (con margen de 1 minuto)
+        if (timeDiff > 0 && timeDiff <= reminderTime && timeDiff > (reminderTime - 60000)) {
+          showNotification(
+            `📅 Recordatorio: ${event.texto}`,
+            `Evento a las ${event.hora} - ${event.reminder} minutos antes`,
+            "⏰"
+          );
+          event.notified = true;
+          saveEvents();
+        }
+        
+        // Resetear notificación si el evento ya pasó
+        if (timeDiff < 0) {
+          event.notified = false;
+          saveEvents();
+        }
+      }
+    });
+  });
+}
+
+// Iniciar verificación de notificaciones
+function startNotificationCheck() {
+  if (notificationCheckInterval) {
+    clearInterval(notificationCheckInterval);
+  }
+  // Verificar cada 30 segundos
+  notificationCheckInterval = setInterval(checkUpcomingEvents, 30000);
+  // Verificar inmediatamente
+  checkUpcomingEvents();
+}
+
+// ============================================
+// FUNCIONES DE DATOS
+// ============================================
 
 // Cargar datos guardados
 function loadData() {
@@ -61,11 +146,14 @@ function getDateKey(year, month, day) {
 // Animación de página
 function animatePage() {
   notebook.classList.remove("animate");
-  void notebook.offsetWidth; // Forzar reflow
+  void notebook.offsetWidth;
   notebook.classList.add("animate");
 }
 
-// Renderizar calendario
+// ============================================
+// RENDERIZADO DEL CALENDARIO
+// ============================================
+
 function renderCalendar() {
   daysContainer.innerHTML = "";
 
@@ -75,10 +163,8 @@ function renderCalendar() {
   monthTitle.textContent = MONTHS[month];
   yearTitle.textContent = year;
 
-  // Obtener primer día (lunes = 1, domingo = 7)
   const firstDay = new Date(year, month, 1).getDay();
   const adjustedFirstDay = firstDay === 0 ? 7 : firstDay;
-
   const lastDate = new Date(year, month + 1, 0).getDate();
 
   // Días vacíos al inicio
@@ -99,23 +185,19 @@ function renderCalendar() {
     day.className = "day";
     day.setAttribute("data-date", dateKey);
 
-    // Marcar día actual
     if (isCurrentMonth && d === today.getDate()) {
       day.classList.add("today");
     }
 
-    // Marcar día seleccionado
     if (dateKey === selectedDate) {
       day.classList.add("selected");
     }
 
-    // Número del día
     const num = document.createElement("div");
     num.className = "day-number";
     num.textContent = d;
     day.appendChild(num);
 
-    // Decoración si hay eventos
     if (events[dateKey] && events[dateKey].length > 0) {
       const deco = document.createElement("div");
       deco.className = "decoration";
@@ -124,21 +206,22 @@ function renderCalendar() {
       day.appendChild(deco);
     }
 
-    // Evento click
     day.onclick = () => selectDay(dateKey);
 
     daysContainer.appendChild(day);
   }
 }
 
-// Seleccionar día
+// ============================================
+// GESTIÓN DE EVENTOS
+// ============================================
+
 function selectDay(dateKey) {
   selectedDate = dateKey;
   showEvents();
   renderCalendar();
 }
 
-// Mostrar eventos del día seleccionado
 function showEvents() {
   eventsList.innerHTML = "";
 
@@ -152,7 +235,6 @@ function showEvents() {
     return;
   }
 
-  // Ordenar eventos por hora
   const sortedEvents = [...events[selectedDate]].sort((a, b) => {
     return a.hora.localeCompare(b.hora);
   });
@@ -163,12 +245,17 @@ function showEvents() {
 
     const text = document.createElement("span");
     text.className = "event-text";
-    text.textContent = `🕒 ${ev.hora} – ${ev.texto}`;
+    
+    let reminderText = "";
+    if (ev.reminder) {
+      reminderText = ` 🔔${ev.reminder}min`;
+    }
+    
+    text.textContent = `🕒 ${ev.hora} – ${ev.texto}${reminderText}`;
 
     const actions = document.createElement("span");
     actions.className = "event-actions";
 
-    // Botón editar
     const edit = document.createElement("button");
     edit.className = "event-btn edit-btn";
     edit.textContent = "✏️";
@@ -178,7 +265,6 @@ function showEvents() {
       editEvent(index);
     };
 
-    // Botón eliminar
     const del = document.createElement("button");
     del.className = "event-btn delete-btn";
     del.textContent = "❌";
@@ -196,35 +282,63 @@ function showEvents() {
   });
 }
 
-// Editar evento
 function editEvent(index) {
   const ev = events[selectedDate][index];
   const hora = prompt("Editar hora (ej: 08:30):", ev.hora);
   
-  if (hora === null) return; // Usuario canceló
+  if (hora === null) return;
   
   const texto = prompt("Editar evento:", ev.texto);
   
-  if (texto === null) return; // Usuario canceló
+  if (texto === null) return;
 
   if (!hora.trim() || !texto.trim()) {
     alert("La hora y el evento no pueden estar vacíos");
     return;
   }
 
-  events[selectedDate][index] = { hora: hora.trim(), texto: texto.trim() };
+  // Preguntar por recordatorio
+  const wantsReminder = confirm("¿Quieres recibir un recordatorio para este evento?");
+  let reminder = null;
+  
+  if (wantsReminder) {
+    const reminderInput = prompt(
+      "¿Cuántos minutos antes quieres el recordatorio?\n" +
+      "(Ejemplos: 5, 10, 15, 30, 60)",
+      ev.reminder || "15"
+    );
+    
+    if (reminderInput !== null && reminderInput.trim() !== "") {
+      const reminderMinutes = parseInt(reminderInput);
+      if (!isNaN(reminderMinutes) && reminderMinutes > 0) {
+        reminder = reminderMinutes;
+        
+        // Solicitar permiso si no lo tiene
+        if (Notification.permission === "default") {
+          requestNotificationPermission();
+        }
+      }
+    }
+  }
+
+  events[selectedDate][index] = { 
+    hora: hora.trim(), 
+    texto: texto.trim(),
+    reminder: reminder,
+    notified: false
+  };
+  
   saveEvents();
   showEvents();
   renderCalendar();
+  startNotificationCheck();
 }
 
-// Eliminar evento
 function deleteEvent(index) {
   if (!confirm("¿Eliminar este evento?")) return;
 
   events[selectedDate].splice(index, 1);
   
-  // Si no quedan eventos, eliminar el día
   if (events[selectedDate].length === 0) {
     delete events[selectedDate];
   }
@@ -234,7 +348,6 @@ function deleteEvent(index) {
   renderCalendar();
 }
 
-// Agregar evento
 function addEvent() {
   if (!selectedDate) {
     alert("Selecciona un día primero");
@@ -242,14 +355,40 @@ function addEvent() {
   }
 
   const hora = prompt("Hora (ej: 08:30):");
-  if (hora === null) return; // Usuario canceló
+  if (hora === null) return;
 
   const texto = prompt("Evento:");
-  if (texto === null) return; // Usuario canceló
+  if (texto === null) return;
 
   if (!hora.trim() || !texto.trim()) {
     alert("La hora y el evento no pueden estar vacíos");
     return;
+  }
+
+  // Preguntar por recordatorio
+  const wantsReminder = confirm("¿Quieres recibir un recordatorio para este evento?");
+  let reminder = null;
+  
+  if (wantsReminder) {
+    const reminderInput = prompt(
+      "¿Cuántos minutos antes quieres el recordatorio?\n" +
+      "(Ejemplos: 5, 10, 15, 30, 60)",
+      "15"
+    );
+    
+    if (reminderInput !== null && reminderInput.trim() !== "") {
+      const reminderMinutes = parseInt(reminderInput);
+      if (!isNaN(reminderMinutes) && reminderMinutes > 0) {
+        reminder = reminderMinutes;
+        
+        // Solicitar permiso si no lo tiene
+        if (Notification.permission === "default") {
+          requestNotificationPermission();
+        } else if (Notification.permission === "denied") {
+          alert("Las notificaciones están bloqueadas. Por favor, actívalas en la configuración de tu navegador.");
+        }
+      }
+    }
   }
 
   if (!events[selectedDate]) {
@@ -258,15 +397,21 @@ function addEvent() {
 
   events[selectedDate].push({ 
     hora: hora.trim(), 
-    texto: texto.trim() 
+    texto: texto.trim(),
+    reminder: reminder,
+    notified: false
   });
 
   saveEvents();
   showEvents();
   renderCalendar();
+  startNotificationCheck();
 }
 
-// Navegar al mes anterior
+// ============================================
+// NAVEGACIÓN
+// ============================================
+
 function goToPrevMonth() {
   currentDate.setMonth(currentDate.getMonth() - 1);
   selectedDate = null;
@@ -275,7 +420,6 @@ function goToPrevMonth() {
   renderCalendar();
 }
 
-// Navegar al mes siguiente
 function goToNextMonth() {
   currentDate.setMonth(currentDate.getMonth() + 1);
   selectedDate = null;
@@ -284,7 +428,10 @@ function goToNextMonth() {
   renderCalendar();
 }
 
-// Event Listeners
+// ============================================
+// EVENT LISTENERS
+// ============================================
+
 addEventBtn.addEventListener("click", addEvent);
 prevBtn.addEventListener("click", goToPrevMonth);
 nextBtn.addEventListener("click", goToNextMonth);
@@ -310,6 +457,21 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// Inicializar
+// ============================================
+// INICIALIZACIÓN
+// ============================================
+
 loadData();
 renderCalendar();
+
+// Solicitar permiso de notificaciones al cargar
+if ("Notification" in window && Notification.permission === "default") {
+  setTimeout(() => {
+    if (confirm("¿Quieres activar las notificaciones para recibir recordatorios de tus eventos?")) {
+      requestNotificationPermission();
+    }
+  }, 2000);
+}
+
+// Iniciar verificación de notificaciones
+startNotificationCheck();
