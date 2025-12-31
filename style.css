@@ -96,6 +96,8 @@ body::after {
   position: relative;
   background: linear-gradient(to right, transparent, rgba(212, 165, 116, 0.1), transparent);
   padding: 20px 0;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 /* Decoraciones en el header */
@@ -149,6 +151,30 @@ body::after {
   background-clip: text;
 }
 
+/* Botón de alternancia de vista */
+.header-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.view-toggle-btn {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, var(--color-navy), #2a5a7c);
+  color: var(--color-white);
+  border: 2px solid var(--color-navy);
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.view-toggle-btn:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+}
+
 /* ============================================
    LAYOUT PRINCIPAL
 ============================================ */
@@ -166,15 +192,32 @@ body::after {
   min-width: 280px;
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 20px;
   position: sticky;
   top: 20px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
 }
 
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: var(--color-cream);
+  border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: var(--color-gold);
+  border-radius: 10px;
+}
+
+.search-panel,
 .events-panel,
 .notes-panel {
   background: var(--color-white);
-  padding: 25px;
+  padding: 20px;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   transition: var(--transition);
@@ -183,6 +226,7 @@ body::after {
 }
 
 /* Detalles decorativos en los paneles */
+.search-panel::before,
 .events-panel::before,
 .notes-panel::before {
   content: "";
@@ -192,6 +236,16 @@ body::after {
   width: 100%;
   height: 4px;
   background: linear-gradient(90deg, var(--color-gold), var(--color-pink), var(--color-lavender));
+}
+
+.search-panel::after {
+  content: "🔍";
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 1.5rem;
+  opacity: 0.2;
+  transform: rotate(15deg);
 }
 
 .events-panel::after {
@@ -214,6 +268,7 @@ body::after {
   transform: rotate(-10deg);
 }
 
+.search-panel:hover,
 .events-panel:hover,
 .notes-panel:hover {
   box-shadow: var(--shadow-lg);
@@ -223,7 +278,7 @@ body::after {
 .sidebar h2 {
   font-family: Georgia, serif;
   font-style: italic;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   color: var(--color-navy);
   margin: 0 0 15px 0;
   padding-bottom: 10px;
@@ -231,6 +286,11 @@ body::after {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.search-panel h2::before {
+  content: "🔍";
+  font-size: 1.1rem;
 }
 
 .events-panel h2::before {
@@ -241,6 +301,82 @@ body::after {
 .notes-panel h2::before {
   content: "✏️";
   font-size: 1.2rem;
+}
+
+/* BÚSQUEDA */
+#searchInput {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid var(--color-gray-light);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: var(--transition);
+  background: var(--color-cream);
+}
+
+#searchInput:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.15);
+  background: var(--color-white);
+}
+
+.search-results {
+  margin-top: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.search-results::-webkit-scrollbar {
+  width: 6px;
+}
+
+.search-results::-webkit-scrollbar-track {
+  background: var(--color-cream);
+  border-radius: 10px;
+}
+
+.search-results::-webkit-scrollbar-thumb {
+  background: var(--color-gold);
+  border-radius: 10px;
+}
+
+.search-result-item {
+  padding: 10px;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #FFF8F0 0%, var(--color-cream) 100%);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--color-gold);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.search-result-item:hover {
+  background: linear-gradient(135deg, var(--color-peach) 0%, #FFE5D9 100%);
+  transform: translateX(5px);
+  box-shadow: var(--shadow-sm);
+}
+
+.search-result-date {
+  font-size: 0.75rem;
+  color: var(--color-gold);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.search-result-text {
+  font-size: 0.85rem;
+  color: var(--color-navy);
+  line-height: 1.4;
+}
+
+.no-results {
+  padding: 15px;
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  font-size: 0.9rem;
 }
 
 /* EVENTOS */
@@ -771,4 +907,175 @@ button:focus-visible,
 ::selection {
   background: var(--color-gold);
   color: var(--color-white);
+}
+
+/* ============================================
+   ETIQUETAS DE EVENTOS
+============================================ */
+.event-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin: 2px 2px 0 0;
+  border: 1px solid;
+}
+
+/* ============================================
+   VISTA SEMANAL
+============================================ */
+.week-view {
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.week-timeline {
+  display: flex;
+  gap: 0;
+  height: 1200px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.week-timeline::-webkit-scrollbar {
+  width: 8px;
+}
+
+.week-timeline::-webkit-scrollbar-track {
+  background: var(--color-cream);
+}
+
+.week-timeline::-webkit-scrollbar-thumb {
+  background: var(--color-gold);
+  border-radius: 10px;
+}
+
+.time-column {
+  width: 60px;
+  flex-shrink: 0;
+  border-right: 2px solid var(--color-gray-light);
+  background: var(--color-cream);
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
+.time-slot {
+  height: 50px;
+  padding: 5px;
+  font-size: 0.7rem;
+  color: #666;
+  border-bottom: 1px solid var(--color-gray-light);
+  text-align: center;
+}
+
+.week-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  flex: 1;
+  position: relative;
+}
+
+.week-day-column {
+  border-right: 1px solid var(--color-gray-light);
+  position: relative;
+  min-width: 100px;
+}
+
+.week-day-column:last-child {
+  border-right: none;
+}
+
+.week-day-header {
+  position: sticky;
+  top: 0;
+  background: var(--color-white);
+  padding: 10px;
+  text-align: center;
+  border-bottom: 2px solid var(--color-gold);
+  z-index: 1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.week-day-header.today {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  font-weight: bold;
+}
+
+.week-day-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-navy);
+  letter-spacing: 0.5px;
+}
+
+.week-day-number {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-navy);
+  margin-top: 4px;
+}
+
+.week-events-container {
+  position: relative;
+  height: 1200px;
+}
+
+/* Líneas de horas en el fondo */
+.week-day-column::before {
+  content: "";
+  position: absolute;
+  top: 50px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 49px,
+    var(--color-gray-light) 49px,
+    var(--color-gray-light) 50px
+  );
+  pointer-events: none;
+}
+
+.week-event-block {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  min-height: 40px;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid;
+  cursor: pointer;
+  transition: var(--transition);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.week-event-block:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-sm);
+  z-index: 2;
+}
+
+.week-event-time {
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+  opacity: 0.9;
+}
+
+.week-event-text {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  font-weight: 500;
+}
+
+.week-event-tags {
+  font-size: 0.65rem;
+  margin-top: 3px;
+  opacity: 0.8;
 }
