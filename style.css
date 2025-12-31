@@ -659,17 +659,11 @@ body::after {
 @keyframes pageTurn {
   0% {
     opacity: 0;
-    transform: translateX(60px) rotateY(-10deg) scale(0.9);
-    filter: blur(4px);
-  }
-  50% {
-    opacity: 0.5;
-    filter: blur(2px);
+    transform: translateX(30px) scale(0.98);
   }
   100% {
     opacity: 1;
-    transform: translateX(0) rotateY(0) scale(1);
-    filter: blur(0);
+    transform: translateX(0) scale(1);
   }
 }
 
