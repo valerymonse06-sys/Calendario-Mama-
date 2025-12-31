@@ -41,15 +41,50 @@ function requestNotificationPermission() {
   }
 }
 
+// Reproducir sonido de notificación
+function playNotificationSound() {
+  // Crear contexto de audio
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  
+  // Crear oscilador para el sonido
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+  
+  // Configurar sonido agradable (campana suave)
+  oscillator.type = 'sine';
+  
+  // Secuencia de notas para un sonido tipo campana
+  const now = audioContext.currentTime;
+  
+  // Primera nota
+  oscillator.frequency.setValueAtTime(800, now);
+  gainNode.gain.setValueAtTime(0.3, now);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+  
+  // Segunda nota (más aguda)
+  oscillator.frequency.setValueAtTime(1000, now + 0.15);
+  gainNode.gain.setValueAtTime(0.2, now + 0.15);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+  
+  oscillator.start(now);
+  oscillator.stop(now + 0.5);
+}
+
 // Mostrar notificación
 function showNotification(title, body, icon = "🔔") {
   if ("Notification" in window && Notification.permission === "granted") {
+    // Reproducir sonido personalizado
+    playNotificationSound();
+    
     new Notification(title, {
       body: body,
       icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>" + icon + "</text></svg>",
       badge: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔔</text></svg>",
       requireInteraction: false,
-      silent: false
+      silent: true
     });
   }
 }
